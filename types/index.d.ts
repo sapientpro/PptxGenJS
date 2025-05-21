@@ -1302,10 +1302,60 @@ declare namespace PptxGenJS {
 		bodyFontFace?: string
 	}
 
+	export interface ShapeGeomProps {
+		/**
+		 * Points (only for pptx.shapes.CUSTOM_GEOMETRY)
+		 * - type: 'arc'
+		 * - `hR` Shape Arc Height Radius
+		 * - `wR` Shape Arc Width Radius
+		 * - `stAng` Shape Arc Start Angle
+		 * - `swAng` Shape Arc Swing Angle
+		 * @see http://www.datypic.com/sc/ooxml/e-a_arcTo-1.html
+		 * @example [{ x: 0, y: 0 }, { x: 10, y: 10 }] // draw a line between those two points
+		 */
+		points?: Array<
+			| { x: Coord, y: Coord, moveTo?: boolean }
+			| { x: Coord, y: Coord, curve: { type: 'arc', hR: Coord, wR: Coord, stAng: number, swAng: number } }
+			| { x: Coord, y: Coord, curve: { type: 'cubic', x1: Coord, y1: Coord, x2: Coord, y2: Coord } }
+			| { x: Coord, y: Coord, curve: { type: 'quadratic', x1: Coord, y1: Coord } }
+			| { close: true }
+		>
+
+		/**
+		 * Rounded rectangle radius (only for pptx.shapes.ROUNDED_RECTANGLE)
+		 * - values: 0.0 to 1.0
+		 * @default 0
+		 */
+		rectRadius?: number
+
+		/**
+		 * Radius (only for pptx.shapes.PIE, pptx.shapes.ARC, pptx.shapes.BLOCK_ARC)
+		 * - In the case of pptx.shapes.BLOCK_ARC you have to setup the arcThicknessRatio
+		 * - values: [0-359, 0-359]
+		 * @since v3.4.0
+		 * @default [270, 0]
+		 */
+		angleRange?: [number, number]
+
+		/**
+		 * Radius (only for pptx.shapes.BLOCK_ARC)
+		 * - You have to setup the angleRange values too
+		 * - values: 0.0-1.0
+		 * @since v3.4.0
+		 * @default 0.5
+		 */
+		arcThicknessRatio?: number
+
+		/**
+		 * An optional adjustments values for the shape.
+		 */
+		adjustments?: Record<string, number>;
+	}
+
 	// image / media ==================================================================================
 	export type MediaType = 'audio' | 'online' | 'video'
 
-	export interface ImageProps extends PositionProps, DataOrPathProps, ObjectNameProps {
+	export interface ImageProps extends PositionProps, DataOrPathProps, ShapeGeomProps, ObjectNameProps {
 		/**
 		 * Alt Text value ("How would you describe this object and its contents to someone who is blind?")
 		 * - PowerPoint: [right-click on an image] > "Edit Alt Text..."
@@ -1395,6 +1445,8 @@ declare namespace PptxGenJS {
 		 * @example 25 // 25% transparent
 		 */
 		transparency?: number
+
+		shape?: SHAPE_NAME
 	}
 	/**
 	 * Add media (audio/video) to slide
@@ -1436,28 +1488,12 @@ declare namespace PptxGenJS {
 
 	// shapes =========================================================================================
 
-	export interface ShapeProps extends PositionProps, ObjectNameProps {
+	export interface ShapeProps extends PositionProps, ObjectNameProps, ShapeGeomProps {
 		/**
 		 * Horizontal alignment
 		 * @default 'left'
 		 */
 		align?: HAlign
-		/**
-		 * Radius (only for pptx.shapes.PIE, pptx.shapes.ARC, pptx.shapes.BLOCK_ARC)
-		 * - In the case of pptx.shapes.BLOCK_ARC you have to setup the arcThicknessRatio
-		 * - values: [0-359, 0-359]
-		 * @since v3.4.0
-		 * @default [270, 0]
-		 */
-		angleRange?: [number, number]
-		/**
-		 * Radius (only for pptx.shapes.BLOCK_ARC)
-		 * - You have to setup the angleRange values too
-		 * - values: 0.0-1.0
-		 * @since v3.4.0
-		 * @default 0.5
-		 */
-		arcThicknessRatio?: number
 		/**
 		 * Shape fill color properties
 		 * @example { color:'FF0000' } // hex color (red)
@@ -1501,12 +1537,6 @@ declare namespace PptxGenJS {
 			| { x: Coord, y: Coord, curve: { type: 'quadratic', x1: Coord, y1: Coord } }
 			| { close: true }
 		>
-		/**
-		 * Rounded rectangle radius (only for pptx.shapes.ROUNDED_RECTANGLE)
-		 * - values: 0.0 to 1.0
-		 * @default 0
-		 */
-		rectRadius?: number
 		/**
 		 * Rotation (degrees)
 		 * - range: -360 to 360

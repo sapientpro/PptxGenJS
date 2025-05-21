@@ -477,7 +477,7 @@ export interface ThemeProps {
 // image / media ==================================================================================
 export type MediaType = 'audio' | 'online' | 'video'
 
-export interface ImageProps extends PositionProps, DataOrPathProps, ObjectNameProps {
+export interface ImageProps extends PositionProps, DataOrPathProps, ObjectNameProps, ShapeGeomProps {
 	/**
 	 * Alt Text value ("How would you describe this object and its contents to someone who is blind?")
 	 * - PowerPoint: [right-click on an image] > "Edit Alt Text..."
@@ -567,6 +567,8 @@ export interface ImageProps extends PositionProps, DataOrPathProps, ObjectNamePr
 	 * @example 25 // 25% transparent
 	 */
 	transparency?: number
+
+	shape?: SHAPE_NAME
 }
 /**
  * Add media (audio/video) to slide
@@ -607,13 +609,32 @@ export interface MediaProps extends PositionProps, DataOrPathProps, ObjectNamePr
 }
 
 // shapes =========================================================================================
-
-export interface ShapeProps extends PositionProps, ObjectNameProps {
+export interface ShapeGeomProps {
 	/**
-	 * Horizontal alignment
-	 * @default 'left'
+	 * Points (only for pptx.shapes.CUSTOM_GEOMETRY)
+	 * - type: 'arc'
+	 * - `hR` Shape Arc Height Radius
+	 * - `wR` Shape Arc Width Radius
+	 * - `stAng` Shape Arc Start Angle
+	 * - `swAng` Shape Arc Swing Angle
+	 * @see http://www.datypic.com/sc/ooxml/e-a_arcTo-1.html
+	 * @example [{ x: 0, y: 0 }, { x: 10, y: 10 }] // draw a line between those two points
 	 */
-	align?: HAlign
+	points?: Array<
+		| { x: Coord, y: Coord, moveTo?: boolean }
+		| { x: Coord, y: Coord, curve: { type: 'arc', hR: Coord, wR: Coord, stAng: number, swAng: number } }
+		| { x: Coord, y: Coord, curve: { type: 'cubic', x1: Coord, y1: Coord, x2: Coord, y2: Coord } }
+		| { x: Coord, y: Coord, curve: { type: 'quadratic', x1: Coord, y1: Coord } }
+		| { close: true }
+	>
+
+	/**
+	 * Rounded rectangle radius (only for pptx.shapes.ROUNDED_RECTANGLE)
+	 * - values: 0.0 to 1.0
+	 * @default 0
+	 */
+	rectRadius?: number
+
 	/**
 	 * Radius (only for pptx.shapes.PIE, pptx.shapes.ARC, pptx.shapes.BLOCK_ARC)
 	 * - In the case of pptx.shapes.BLOCK_ARC you have to setup the arcThicknessRatio
@@ -622,6 +643,7 @@ export interface ShapeProps extends PositionProps, ObjectNameProps {
 	 * @default [270, 0]
 	 */
 	angleRange?: [number, number]
+
 	/**
 	 * Radius (only for pptx.shapes.BLOCK_ARC)
 	 * - You have to setup the angleRange values too
@@ -630,6 +652,19 @@ export interface ShapeProps extends PositionProps, ObjectNameProps {
 	 * @default 0.5
 	 */
 	arcThicknessRatio?: number
+
+	/**
+	 * An optional adjustments values for the shape.
+	 */
+	adjustments?: Record<string, number>;
+}
+
+export interface ShapeProps extends PositionProps, ObjectNameProps, ShapeGeomProps {
+	/**
+	 * Horizontal alignment
+	 * @default 'left'
+	 */
+	align?: HAlign
 	/**
 	 * Shape fill color properties
 	 * @example { color:'FF0000' } // hex color (red)
@@ -656,29 +691,7 @@ export interface ShapeProps extends PositionProps, ObjectNameProps {
 	 * Line options
 	 */
 	line?: ShapeLineProps
-	/**
-	 * Points (only for pptx.shapes.CUSTOM_GEOMETRY)
-	 * - type: 'arc'
-	 * - `hR` Shape Arc Height Radius
-	 * - `wR` Shape Arc Width Radius
-	 * - `stAng` Shape Arc Start Angle
-	 * - `swAng` Shape Arc Swing Angle
-	 * @see http://www.datypic.com/sc/ooxml/e-a_arcTo-1.html
-	 * @example [{ x: 0, y: 0 }, { x: 10, y: 10 }] // draw a line between those two points
-	 */
-	points?: Array<
-	| { x: Coord, y: Coord, moveTo?: boolean }
-	| { x: Coord, y: Coord, curve: { type: 'arc', hR: Coord, wR: Coord, stAng: number, swAng: number } }
-	| { x: Coord, y: Coord, curve: { type: 'cubic', x1: Coord, y1: Coord, x2: Coord, y2: Coord } }
-	| { x: Coord, y: Coord, curve: { type: 'quadratic', x1: Coord, y1: Coord } }
-	| { close: true }
-	>
-	/**
-	 * Rounded rectangle radius (only for pptx.shapes.ROUNDED_RECTANGLE)
-	 * - values: 0.0 to 1.0
-	 * @default 0
-	 */
-	rectRadius?: number
+
 	/**
 	 * Rotation (degrees)
 	 * - range: -360 to 360
